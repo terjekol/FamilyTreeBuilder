@@ -1,0 +1,92 @@
+﻿@model FamilyTreeBuilder.Models.PersonViewModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+@if (Model.Person.MotherNavigation == null && Model.Person.FatherNavigation == null)
+{
+    <b>No information about parents available</b>
+    <br />
+}
+@if (Model.Person.FatherNavigation != null)
+{
+    <b>Father: </b>@(Model.Person.FatherNavigation.FirstName + " " + Model.Person.FatherNavigation.LastName)
+    <a asp-action="Details" asp-route-id="@Model.Person.FatherNavigation.Id">Details</a>
+    <br />
+}
+@if (Model.Person.MotherNavigation != null)
+{
+    <b>Mother: </b>@(Model.Person.MotherNavigation.FirstName + " " + Model.Person.MotherNavigation.LastName)
+    <a asp-action="Details" asp-route-id="@Model.Person.MotherNavigation.Id">Details</a>
+    <br />
+}
+
+<h2>@Model.Person.FirstName @Model.Person.LastName</h2>
+
+<table>
+    <tr>
+        @if (Model.Person.BirthDate != null)
+        {
+            <td>Birthdate</td>
+            <td>@Model.Person.BirthDate</td>
+        }
+    </tr>
+    <tr>
+        @if (Model.Person.DeathDate != null)
+        {
+            <td>Birthdate</td>
+            <td>@Model.Person.DeathDate</td>
+        }
+    </tr>
+    <tr>
+        @if (Model.Person.IsMale != null)
+        {
+            <td>Sex</td>
+            <td>@(Model.Person.IsMale.Value ? "Male" : "Female")</td>
+        }
+
+    </tr>
+</table>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Person.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
+@if (!Model.Children.Any())
+{
+    <h3>No children</h3>
+}
+else
+{
+    <h4>Children</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>First name</th>
+                <th>Last name</th>
+                <th>Birth date</th>
+                <th>Death date</th>
+                <th>Sex</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Children)
+            {
+                <tr>
+                    <td>@item.FirstName</td>
+                    <td>@item.LastName</td>
+                    <td>@item.BirthDate</td>
+                    <td>@item.DeathDate</td>
+                    <td>@(item.IsMale == null ? "" : item.IsMale.Value ? "Male" : "Female")</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
