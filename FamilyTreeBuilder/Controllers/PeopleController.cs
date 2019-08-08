@@ -53,8 +53,7 @@ namespace FamilyTreeBuilder.Controllers
         // GET: People/Create
         public IActionResult Create()
         {
-            ViewData["Father"] = new SelectList(_context.Person, "Id", "Id");
-            ViewData["Mother"] = new SelectList(_context.Person, "Id", "Id");
+            SavePotentialParentsAndSexesInViewData();
             return View();
         }
 
@@ -71,8 +70,7 @@ namespace FamilyTreeBuilder.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["Father"] = new SelectList(_context.Person, "Id", "Id", person.Father);
-            ViewData["Mother"] = new SelectList(_context.Person, "Id", "Id", person.Mother);
+            SavePotentialParentsAndSexesInViewData(person);
             return View(person);
         }
 
@@ -89,8 +87,7 @@ namespace FamilyTreeBuilder.Controllers
             {
                 return NotFound();
             }
-            ViewData["Father"] = new SelectList(_context.Person, "Id", "Id", person.Father);
-            ViewData["Mother"] = new SelectList(_context.Person, "Id", "Id", person.Mother);
+            SavePotentialParentsAndSexesInViewData(person);
             return View(person);
         }
 
@@ -126,8 +123,7 @@ namespace FamilyTreeBuilder.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["Father"] = new SelectList(_context.Person, "Id", "Id", person.Father);
-            ViewData["Mother"] = new SelectList(_context.Person, "Id", "Id", person.Mother);
+            SavePotentialParentsAndSexesInViewData(person);
             return View(person);
         }
 
@@ -166,5 +162,35 @@ namespace FamilyTreeBuilder.Controllers
         {
             return _context.Person.Any(e => e.Id == id);
         }
+
+        private void SavePotentialParentsAndSexesInViewData(Person person = null)
+        {
+            object mapPerson(Person p)
+            {
+                var name = p.FirstName ?? string.Empty;
+                if (p.LastName != null) name += " " + p.LastName;
+                if (p.BirthDate != null) name += " (born " + p.BirthDate.Value.ToShortDateString() + ")";
+                return new
+                {
+                    Id = p.Id,
+                    Name = name
+                };
+            }
+
+            var sexes = new object[]
+            {
+                new {Value = (bool?)null, Text=string.Empty},
+                new {Value=(bool?)true, Text="Male"},
+                new {Value=(bool?)false, Text="Female"},
+            };
+            var potentialFathers = _context.Person.Where(p => p.IsMale == true).Select(mapPerson).ToList();
+            var potentialMothers = _context.Person.Where(p => p.IsMale == false).Select(mapPerson).ToList();
+            potentialMothers.Insert(0, new { Id = (int?)null, Name = string.Empty });
+            potentialFathers.Insert(0, new { Id = (int?)null, Name = string.Empty });
+            ViewData["Father"] = new SelectList(potentialFathers, "Id", "Name", person?.Father);
+            ViewData["Mother"] = new SelectList(potentialMothers, "Id", "Name", person?.Mother);
+            ViewData["Sexes"] = new SelectList(sexes, "Value", "Text", person?.IsMale);
+        }
+
     }
 }
