@@ -37,6 +37,16 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="People" asp-action="Index">Family tree</a>
                         </li>
+                        <li>
+@if (User.Identity.IsAuthenticated)
+{
+    <a class="nav-link text-dark" asp-controller="Account" asp-action="Logout">Log out  @User.Identity.Name </a>
+}
+else
+{
+    <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Log in</a>
+}
+                        </li>
                     </ul>
                 </div>
             </div>
